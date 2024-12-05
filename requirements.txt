@@ -1,0 +1,6 @@
+kafka-python 
+Flask 
+pandas 
+requests
+opensky-api
+
