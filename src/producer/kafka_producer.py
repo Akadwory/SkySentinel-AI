@@ -7,9 +7,7 @@ import json
 # Dynamically set the path to the project root
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from src.utils.opensky_api import OpenSkyApi  # Import OpenSkyApi after fixing the path
-
-
+from src.utils.opensky_api_test import OpenSkyApi  # Import OpenSkyApi after fixing the path
 
 def fetch_flight_data(username, password):
     """

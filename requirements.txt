@@ -3,4 +3,7 @@ Flask
 pandas 
 requests
 opensky-api
+psycopg2
+
+#-e .
 
