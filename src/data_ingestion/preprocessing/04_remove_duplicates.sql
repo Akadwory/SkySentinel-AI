@@ -1,3 +1,4 @@
+-- Identify and remove exact duplicate records based on multiple fields
 DELETE FROM flight_data a
 USING (
     SELECT MIN(id) AS id, callsign, latitude, longitude, time_position
@@ -9,3 +10,4 @@ AND a.callsign = b.callsign
 AND a.latitude = b.latitude
 AND a.longitude = b.longitude
 AND a.time_position = b.time_position;
+
