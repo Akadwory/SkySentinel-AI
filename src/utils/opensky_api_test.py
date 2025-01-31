@@ -38,4 +38,3 @@ if __name__ == "__main__":
 
 #export OPEN_SKY_USERNAME="skyai_ai"
 #export OPEN_SKY_PASSWORD="Ahmed_7777"
-

@@ -92,6 +92,3 @@ We welcome contributions from AI researchers, data engineers, and aviation exper
 For inquiries, suggestions, or collaborations, please reach out via GitHub or LinkedIn.
 
 ---
-
-## **License**
-SkySentinel AI is released under the MIT License. See the `LICENSE` file for details.
