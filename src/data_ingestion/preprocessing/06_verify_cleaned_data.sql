@@ -1,1 +1,1 @@
-SELECT * FROM flight_data LIMIT 10;
+SELECT * FROM flight_data LIMIT 1000;
