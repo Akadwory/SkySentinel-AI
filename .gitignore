@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 opensky-api/
 path/to/opensky_api_test.py
+
+data/
