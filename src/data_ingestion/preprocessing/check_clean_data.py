@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Load the cleaned dataset
 file_path = "/Users/adamkadwory/Desktop/skysentineAI/data/cleaned_flight_data.csv"
@@ -24,11 +26,6 @@ print(df["on_ground"].unique())
 num_features = ["geo_altitude", "baro_altitude", "velocity", "vertical_rate"]
 print("\n🔍 Checking Min-Max Range of Numerical Features:")
 print(df[num_features].describe())
-
-
-
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Plot distributions of numerical features
 plt.figure(figsize=(10, 5))
