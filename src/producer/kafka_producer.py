@@ -12,7 +12,7 @@ from src.utils.opensky_api_test import OpenSkyApi  # Import OpenSkyApi after fix
 
 def fetch_flight_data(username, password):
     """
-    Fetch flight data from OpenSky API.
+    Fetch flight data from OpenSky API and include `icao24` for aircraft identification.
     """
     try:
         print("🚀 Fetching flight data from OpenSky Network...")
@@ -24,6 +24,7 @@ def fetch_flight_data(username, password):
             for s in states.states:
                 # Convert float32 to float for JSON serialization
                 flight = {
+                    "icao24": s.icao24,  # ✅ Added ICAO24 aircraft identifier
                     "callsign": s.callsign.strip() if s.callsign else None,
                     "latitude": float(s.latitude) if s.latitude is not None else None,
                     "longitude": float(s.longitude) if s.longitude is not None else None,
@@ -52,7 +53,7 @@ def fetch_flight_data(username, password):
 
 def produce_flight_data():
     """
-    Fetch flight data and produce to Kafka topic 'flight_data'.
+    Fetch flight data and produce it to Kafka topic 'flight_data'.
     """
     try:
         # Load Kafka Producer

@@ -4,7 +4,7 @@ import json
 import os
 
 # PostgreSQL connection details
-DB_NAME = "flight_data"  # Updated to use the correct database
+DB_NAME = "flight_data"
 DB_USER = "adamkadwory"
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")  # Ensure this is set in your environment
 DB_HOST = "localhost"
@@ -25,6 +25,15 @@ except Exception as e:
     print("❌ Error connecting to PostgreSQL:", e)
     exit(1)
 
+# Ensure table has `icao24` column
+try:
+    cursor.execute("ALTER TABLE flight_data ADD COLUMN IF NOT EXISTS icao24 TEXT;")
+    conn.commit()
+    print("✅ Ensured `icao24` column exists in flight_data table.")
+except Exception as e:
+    print("❌ Error ensuring `icao24` column:", e)
+    conn.rollback()
+
 # Create Kafka consumer
 consumer = KafkaConsumer(
     'flight_data',
@@ -39,14 +48,15 @@ for message in consumer:
 
     try:
         cursor.execute("""
-            INSERT INTO flight_data (  -- ✅ NOW USING `flight_data`
-                callsign, latitude, longitude, geo_altitude, baro_altitude, velocity, 
+            INSERT INTO flight_data (
+                icao24, callsign, latitude, longitude, geo_altitude, baro_altitude, velocity, 
                 vertical_rate, on_ground, true_track, position_source, category, 
                 origin_country, time_position, last_contact
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, to_timestamp(%s), to_timestamp(%s)
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, to_timestamp(%s), to_timestamp(%s)
             )
         """, (
+            flight_data.get('icao24'),
             flight_data.get('callsign'),
             float(flight_data.get('latitude')) if flight_data.get('latitude') is not None else None,
             float(flight_data.get('longitude')) if flight_data.get('longitude') is not None else None,
@@ -63,11 +73,14 @@ for message in consumer:
             flight_data.get('last_contact')
         ))
         conn.commit()
-        print(f"✅ Inserted flight data: {flight_data.get('callsign')}")
+        print(f"✅ Inserted flight data for aircraft: {flight_data.get('icao24')}")
 
     except Exception as e:
-        print("❌ Error inserting data:", e)
+        print(f"❌ Error inserting data for {flight_data.get('icao24')}: {e}")
         conn.rollback()
 
 cursor.close()
 conn.close()
+
+
+# export POSTGRES_PASSWORD="erin_123"  
