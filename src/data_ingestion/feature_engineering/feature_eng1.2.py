@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.decomposition import PCA
 from geopy.distance import geodesic
-import os 
 
 # Define paths
 BASE_PATH = "/Users/adamkadwory/Desktop/skysentineAI/data/"
@@ -16,28 +15,28 @@ print("🔄 Loading cleaned flight data...")
 df = pd.read_csv(CLEANED_DATA_PATH)
 print(f"✅ Loaded {len(df)} rows.")
 
-# Sort for Sequential Features
-df = df.sort_values(by=["icao24", "time_position"])
+# Ensure sequential order per flight segment
+df = df.sort_values(by=["icao24", "flight_segment", "time_position"])
 
 # Feature Engineering
 print("🛠️ Engineering features for predictive anomalies...")
 
 # Acceleration (Velocity Change)
-df["acceleration"] = df.groupby("icao24")["velocity"].diff().fillna(0)
+df["acceleration"] = df.groupby(["icao24", "flight_segment"])["velocity"].diff().fillna(0)
 
 # Vertical Rate Change (Sudden Drops)
-df["vertical_rate_change"] = df.groupby("icao24")["vertical_rate"].diff().fillna(0)
+df["vertical_rate_change"] = df.groupby(["icao24", "flight_segment"])["vertical_rate"].diff().fillna(0)
 
 # Track Deviation (Maneuvers)
-df["track_deviation"] = df.groupby("icao24")["true_track"].diff().fillna(0)
-df["track_deviation"] = df["track_deviation"].apply(lambda x: min(abs(x), 360 - abs(x)))  # Normalize angle
+df["track_deviation"] = df.groupby(["icao24", "flight_segment"])["true_track"].diff().fillna(0)
+df["track_deviation"] = df["track_deviation"].apply(lambda x: min(abs(x), 1 - abs(x)))  # Normalize angle to 0-1
 
 # Distance Traveled
 def compute_distance(row, prev_row):
-    if prev_row is not None and pd.notna(row["latitude"]):
+    if prev_row is not None and pd.notna(row["latitude"]) and pd.notna(prev_row["latitude"]):
         return geodesic((prev_row["latitude"], prev_row["longitude"]), (row["latitude"], row["longitude"])).km
     return 0
-df["distance_traveled"] = [compute_distance(df.iloc[i], df.iloc[i-1] if i > 0 else None) for i in range(len(df))]
+df["distance_traveled"] = [compute_distance(df.iloc[i], df.iloc[i-1] if i > 0 and df.iloc[i]["flight_segment"] == df.iloc[i-1]["flight_segment"] else None) for i in range(len(df))]
 
 # PCA for Clustering Anomalies
 print("🔍 Performing PCA for anomaly clustering...")

@@ -9,7 +9,7 @@ RAW_DATA_PATH = os.path.join(BASE_PATH, "raw_flight_data.csv")
 CLEANED_DATA_PATH = os.path.join(BASE_PATH, "cleaned_flight_data.csv")
 DB_NAME = "flight_data"
 DB_USER = "adamkadwory"
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "erin_123")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "erin_123")  # Default if env var not set
 DB_HOST = "localhost"
 DB_PORT = "5432"
 
@@ -30,7 +30,7 @@ if not os.path.exists(RAW_DATA_PATH):
     print(f"Raw data saved to: {RAW_DATA_PATH}")
 
 # Handle Missing Values for Prediction Fields
-print("🧹 Preprocessing for predictive anomaly detection...")
+print("Preprocessing for predictive anomaly detection...")
 df.fillna({
     "geo_altitude": df["geo_altitude"].median(),
     "baro_altitude": df["baro_altitude"].median(),
@@ -42,7 +42,7 @@ df.fillna({
 
 df["latitude"] = df.groupby("callsign")["latitude"].fillna(method="ffill").fillna(method="bfill")
 df["longitude"] = df.groupby("callsign")["longitude"].fillna(method="ffill").fillna(method="bfill")
-df["true_track"] = df["true_track"].fillna(df["true_track"].median())  # For maneuvers
+df["true_track"] = df["true_track"].fillna(df["true_track"].median())
 df.dropna(subset=["latitude", "longitude", "time_position"], inplace=True)
 print(f"Cleaned critical fields, rows: {len(df)}")
 
@@ -61,11 +61,28 @@ for feature in num_features:
     df[feature] = (df[feature] - df[feature].min()) / (df[feature].max() - df[feature].min())
 print("Normalized key features.")
 
-# Outlier Removal
-df["vertical_rate"] = df["vertical_rate"].apply(lambda x: np.nan if abs(x) > 0.5 else x)  # Adjusted for normalized scale
-df.dropna(subset=["vertical_rate"], inplace=True)
-print(f"Removed outliers, final rows: {len(df)}")
+# Segment Flights
+print("Segmenting flights by aircraft and time gaps...")
+df = df.sort_values(by=["icao24", "time_position"])
+df["flight_segment"] = 0
+current_segment = 0
+for i in range(1, len(df)):
+    prev = df.iloc[i-1]
+    curr = df.iloc[i]
+    if (curr["icao24"] != prev["icao24"] or
+        curr["on_ground"] != prev["on_ground"] or 
+        (curr["time_position"] - prev["time_position"]) > pd.Timedelta(minutes=10)):
+        current_segment += 1
+    df.loc[i, "flight_segment"] = current_segment
+print(f"Identified {current_segment + 1} flight segments across aircraft.")
 
-# Save
+# Outlier/Anomaly Flagging
+df["potential_safety_anomaly"] = df["vertical_rate"].apply(lambda x: 1 if abs(x) > 0.1 else 0)  # Sudden altitude changes
+df["potential_security_anomaly"] = df["true_track"].apply(lambda x: 1 if abs(x - 0.5) > 0.25 else 0)  # Large maneuvers (normalized > ~90°)
+df["potential_efficiency_anomaly"] = df.apply(lambda row: 1 if row["distance_traveled"] > 5000 and row["velocity"] < 0.3 else 0, axis=1)  # Inefficient long routes at low speed
+
+print(f"Flagged {df['potential_safety_anomaly'].sum()} safety anomalies, {df['potential_security_anomaly'].sum()} security anomalies, {df['potential_efficiency_anomaly'].sum()} efficiency anomalies.")
+
+# Save cleaned Data File As CSV 
 df.to_csv(CLEANED_DATA_PATH, index=False)
-print(f"📂 Cleaned dataset saved to: {CLEANED_DATA_PATH}")
+print(f"Cleaned dataset saved to: {CLEANED_DATA_PATH}")

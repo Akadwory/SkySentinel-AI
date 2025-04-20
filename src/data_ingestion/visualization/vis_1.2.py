@@ -12,31 +12,34 @@ print("🔄 Loading engineered flight data...")
 df = pd.read_csv(ENGINEERED_DATA_PATH)
 print(f"✅ Loaded {len(df)} rows.")
 
-# Visualization 1: Sample Flight Paths
-sample_icao24 = df["icao24"].unique()[:5]
+# Visualization 1: Anomaly-Highlighted Flight Paths (Per Flight Segment)
+sample_icao24 = df["icao24"].unique()[:2]  # Reduce for clarity
 plt.figure(figsize=(12, 8))
 for icao in sample_icao24:
-    flight = df[df["icao24"] == icao]
-    plt.plot(flight["longitude"], flight["latitude"], label=icao)
-plt.title("Sample Flight Paths (Potential Deviations)")
+    flights = df[df["icao24"] == icao].groupby("flight_segment")
+    for segment, flight in flights:
+        color = "red" if any(flight["potential_security_anomaly"]) else "blue"
+        plt.plot(flight["longitude"], flight["latitude"], label=f"{icao}_Seg{segment}", color=color, alpha=0.5)
+plt.title("Sample Flight Paths by Segment (Security Anomalies in Red)")
 plt.xlabel("Longitude")
 plt.ylabel("Latitude")
-plt.legend()
-plt.savefig(os.path.join(BASE_PATH, "flight_paths.png"))
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.savefig(os.path.join(BASE_PATH, "segmented_flight_paths.png"))
 plt.close()
 
-# Visualization 2: Vertical Rate Change by Altitude
+# Visualization 2: Vertical Rate Change by Altitude (Safety)
 plt.figure(figsize=(10, 6))
-sns.scatterplot(x="geo_altitude", y="vertical_rate_change", hue="on_ground", data=df)
-plt.title("Vertical Rate Change vs. Altitude")
-plt.savefig(os.path.join(BASE_PATH, "vertical_rate_change_vs_altitude.png"))
+sns.scatterplot(x="geo_altitude", y="vertical_rate_change", hue="potential_safety_anomaly", data=df, palette="Reds")
+plt.title("Vertical Rate Change vs. Altitude (Safety Anomalies in Red)")
+plt.savefig(os.path.join(BASE_PATH, "safety_anomalies_altitude.png"))
 plt.close()
 
-# Visualization 3: PCA Clusters
+# Visualization 3: PCA Clusters with Anomalies
 plt.figure(figsize=(10, 6))
-sns.scatterplot(x="pca_1", y="pca_2", hue="track_deviation", size="vertical_rate_change", data=df)
-plt.title("PCA Clusters with Track Deviation and Vertical Rate Change")
+sns.scatterplot(x="pca_1", y="pca_2", hue="potential_security_anomaly", size="vertical_rate_change", data=df, palette="Purples")
+plt.title("PCA Clusters with Security Anomalies and Vertical Rate Change")
 plt.savefig(os.path.join(BASE_PATH, "pca_anomaly_clusters.png"))
 plt.close()
 
-print("✅ Visualization outputs saved.")
+print("✅ Visualization outputs saved with anomaly emphasis.")
