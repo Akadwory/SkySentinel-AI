@@ -41,14 +41,15 @@ SkySentinel AI is built to scale from local air traffic monitoring to a full-fle
 
 ![Phase 1 Architecture](docs/architecture_phase1.png)
 
+```markdown
 ```mermaid
-graph LR
-A[OpenSky API / Simulated Data] --> B[Kafka Producer (Python)]
-B --> C[Kafka Topic: flights_raw]
-C --> D[Kafka Consumer]
-D --> E[Anomaly Detection Model (XGBoost/IForest)]
-E --> F[PostgreSQL DB]
-F --> G[Streamlit/Dash UI]
+graph LR;
+    A[OpenSky API / Simulated Data] --> B[Kafka Producer (Python)];
+    B --> C[Kafka Topic: flights_raw];
+    C --> D[Kafka Consumer];
+    D --> E[Anomaly Detection Model (XGBoost / IForest)];
+    E --> F[PostgreSQL DB];
+    F --> G[Streamlit / Dash UI];
 
 
 Getting Started (Local Simulated Mode)
