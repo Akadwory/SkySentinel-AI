@@ -1,9 +1,6 @@
 # SkySentinel AI – Global Intelligence Mesh
 
 SkySentinel AI is a revolutionary, AI-powered global airspace and Earth intelligence system. Designed as a modular, multi-phase project, SkySentinel starts with real-time flight anomaly detection and evolves into a decentralized AI mesh capable of self-healing, synthetic training, swarm coordination, and satellite integration.
-
-> This system is designed to shock the world and redefine how we perceive and defend our airspace.
-
 ---
 
 ## Project Overview
@@ -56,37 +53,30 @@ Getting Started (Local Simulated Mode)
 You can run Phase 1 using simulated OpenSky data locally before going full-stream.
 
 1. Clone the Repo
-
 git clone https://github.com/Akadwory/SkySentinel-AI.git
 cd SkySentinel-AI
 
 2. Install Dependencies
-
 pip install -r requirements.txt
-3. Run Data Ingestion (Simulated CSV)
 
+3. Run Data Ingestion (Simulated CSV)
 python src/ingestion/fetch_simulated_data.py
 
 4. Start Kafka + PostgreSQL (Optional Docker Setup)
-
 docker-compose up
 
 5. Launch Streamlit Dashboard
-
 streamlit run src/visualization/app.py
 
-Testing
+##Testing
 Run all tests:
-
 pytest tests/
 
 Test logs and detailed validation cases can be found in:
-
-
 docs/test_report.md
 CI/CD integration for GitHub Actions is planned in Phase 2.
 
-Repository Structure
+##Repository Structure
 
 SkySentinel-AI/
 │
@@ -110,19 +100,16 @@ SkySentinel-AI/
 
 Contributing
 All contributors are welcome. Please fork the repo and submit a pull request against the current active phase branch, e.g.:
-
 phase-1-skywatch
+
 A full contribution guide will be added under docs/contribution.md.
 
 
 Contact
 For inquiries, collaborations, or support:
-
-Open a GitHub issue
-
-Post on the Discussions tab
-
-Or contact the repository maintainer listed in the GitHub profile
+- Open a GitHub issue
+- Post on the Discussions tab
+- Or contact the repository maintainer listed in the GitHub profile
 
 
  Final Statement
